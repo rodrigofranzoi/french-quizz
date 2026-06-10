@@ -90,7 +90,7 @@ function formFor(
     : getConjugation(verb, tense, pronoun);
 }
 
-/** Wrong answers from the same verb: other tenses, pronouns, or polarity. */
+/** Wrong answers from the same verb, same polarity (no affirmative/negative flip). */
 function getSameVerbDistractors(
   verb: VerbEntry,
   tense: Tense,
@@ -111,8 +111,6 @@ function getSameVerbDistractors(
       candidates.add(formFor(verb, tense, p, negative));
     }
   }
-
-  candidates.add(formFor(verb, tense, pronoun, !negative));
 
   for (const t of TENSES) {
     for (const p of PRONOUNS) {
