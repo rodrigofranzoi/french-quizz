@@ -118,7 +118,7 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
             ]}
             value={input}
             onChangeText={setInput}
-            placeholder={`ex. ${expectedFull}`}
+            placeholder="…"
             autoCapitalize="none"
             autoCorrect={false}
             editable={grade === null}
