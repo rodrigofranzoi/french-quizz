@@ -47,5 +47,7 @@ export interface ConjugationQuestion {
   verb: VerbEntry;
   tense: Tense;
   negative: boolean;
+  /** Random pronoun for multiple-choice mode. */
+  pronoun: Pronoun;
   answers: Record<Pronoun, string>;
 }

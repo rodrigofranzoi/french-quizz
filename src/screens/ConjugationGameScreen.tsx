@@ -48,7 +48,6 @@ export function ConjugationGameScreen({
   const [question, setQuestion] = useState(() =>
     generateConjugationQuestion(settings),
   );
-  const [pronounIndex, setPronounIndex] = useState(0);
   const [inputs, setInputs] = useState<Record<Pronoun, string>>({
     je: '',
     tu: '',
@@ -63,7 +62,7 @@ export function ConjugationGameScreen({
   );
   const [mcFeedback, setMcFeedback] = useState<'correct' | 'wrong' | null>(null);
 
-  const currentPronoun = PRONOUNS[pronounIndex];
+  const mcPronoun = question.pronoun;
   const isMc = settings.inputMode === 'multiple_choice';
 
   const expectedFull = (p: Pronoun) =>
@@ -71,19 +70,18 @@ export function ConjugationGameScreen({
 
   const mcChoices = useMemo(() => {
     if (!isMc) return [];
-    const correct = question.answers[currentPronoun];
+    const correct = question.answers[mcPronoun];
     return generateConjugationChoices(
       question.verb,
       question.tense,
-      currentPronoun,
+      mcPronoun,
       question.negative,
       correct,
     );
-  }, [isMc, question, currentPronoun]);
+  }, [isMc, question, mcPronoun]);
 
   const resetRound = useCallback(() => {
     setInputs({ je: '', tu: '', elle: '', nous: '', vous: '', elles: '' });
-    setPronounIndex(0);
     setChecked(false);
     setResults(null);
     setMcFeedback(null);
@@ -113,21 +111,12 @@ export function ConjugationGameScreen({
 
   const handleMcAnswer = (answer: string) => {
     if (mcFeedback !== null) return;
-    const ok = answersMatch(answer, question.answers[currentPronoun]);
+    const ok = answersMatch(answer, question.answers[mcPronoun]);
     setMcFeedback(ok ? 'correct' : 'wrong');
     setScore((s) => ({
       correct: s.correct + (ok ? 1 : 0),
       total: s.total + 1,
     }));
-  };
-
-  const handleMcNext = () => {
-    if (pronounIndex < PRONOUNS.length - 1) {
-      setPronounIndex((i) => i + 1);
-      setMcFeedback(null);
-    } else {
-      nextQuestion();
-    }
   };
 
   const allCorrect =
@@ -140,7 +129,7 @@ export function ConjugationGameScreen({
       title="Conjugaison complète"
       subtitle={
         isMc
-          ? `Score : ${score.correct} / ${score.total} — ${PRONOUN_LABELS[currentPronoun]} (${pronounIndex + 1}/6)`
+          ? `Score : ${score.correct} / ${score.total}`
           : `Score : ${score.correct} / ${score.total} (6/6 = 1 point)`
       }
       onBack={onBack}
@@ -155,7 +144,7 @@ export function ConjugationGameScreen({
         <Text style={styles.english}>{question.verb.english}</Text>
         <Text style={styles.instruction}>
           {isMc
-            ? `Choisis la bonne forme pour « ${PRONOUN_LABELS[currentPronoun]} »`
+            ? `Choisis la bonne forme pour « ${PRONOUN_LABELS[mcPronoun]} »`
             : 'Écris la forme complète avec pronom : j\'ai payé, nous lisons…'}
         </Text>
       </View>
@@ -165,10 +154,10 @@ export function ConjugationGameScreen({
           {mcChoices.map((choice) => (
             <Button
               key={choice}
-              title={formatPronounForm(currentPronoun, choice)}
+              title={formatPronounForm(mcPronoun, choice)}
               variant={
                 mcFeedback
-                  ? answersMatch(choice, question.answers[currentPronoun])
+                  ? answersMatch(choice, question.answers[mcPronoun])
                     ? 'primary'
                     : 'outline'
                   : 'outline'
@@ -188,22 +177,15 @@ export function ConjugationGameScreen({
               <Text style={styles.feedbackText}>
                 {mcFeedback === 'correct'
                   ? '✓ Correct !'
-                  : `✗ Réponse : ${expectedFull(currentPronoun)}`}
+                  : `✗ Réponse : ${expectedFull(mcPronoun)}`}
               </Text>
               <ConjugationTable
                 verb={question.verb}
                 tense={question.tense}
                 negative={question.negative}
-                highlightPronoun={currentPronoun}
+                highlightPronoun={mcPronoun}
               />
-              <Button
-                title={
-                  pronounIndex < PRONOUNS.length - 1
-                    ? 'Pronom suivant'
-                    : 'Verbe suivant'
-                }
-                onPress={handleMcNext}
-              />
+              <Button title="Verbe suivant" onPress={nextQuestion} />
             </View>
           )}
         </View>

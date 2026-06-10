@@ -75,6 +75,7 @@ export function generateConjugationQuestion(
     verb,
     tense,
     negative,
+    pronoun: pick(PRONOUNS),
     answers: getAllConjugations(verb, tense, negative),
   };
 }
