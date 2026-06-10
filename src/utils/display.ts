@@ -16,6 +16,21 @@ export function formatPronounForm(pronoun: Pronoun, form: string): string {
   return `${pronoun} ${form}`;
 }
 
+/** Remove subject pronoun from phrase prefix — keyboard answers include the pronoun. */
+export function stripSubjectFromPhraseBefore(
+  before: string,
+  pronoun: Pronoun,
+): string {
+  const withComma = before.replace(new RegExp(`, ${pronoun} $`, 'i'), ', ');
+  if (withComma !== before) return withComma;
+
+  if (new RegExp(`^${pronoun} `, 'i').test(before)) {
+    return before.replace(new RegExp(`^${pronoun} `, 'i'), '');
+  }
+
+  return before;
+}
+
 /** Insert conjugation into a phrase fragment that already contains the subject. */
 export function assemblePhrase(before: string, form: string, after: string): string {
   if (/\bje $/i.test(before) && jeElides(form)) {
