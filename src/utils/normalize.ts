@@ -6,7 +6,11 @@ export type AnswerGrade =
   | 'correct'
   | 'accent_missing'
   | 'gender_warning'
+  | 'spelling_warning'
   | 'accent_and_gender'
+  | 'accent_and_spelling'
+  | 'gender_and_spelling'
+  | 'accent_gender_spelling'
   | 'wrong';
 
 export function normalizeAnswer(text: string): string {
@@ -34,11 +38,16 @@ function matchQuality(user: string, expected: string): MatchQuality {
 function combineGrade(
   quality: 'exact' | 'accent',
   genderWarn: boolean,
+  spellingWarn: boolean,
 ): AnswerGrade {
-  if (quality === 'exact' && !genderWarn) return 'correct';
-  if (quality === 'exact' && genderWarn) return 'gender_warning';
-  if (quality === 'accent' && !genderWarn) return 'accent_missing';
-  return 'accent_and_gender';
+  if (quality === 'exact' && !genderWarn && !spellingWarn) return 'correct';
+  if (quality === 'exact' && genderWarn && !spellingWarn) return 'gender_warning';
+  if (quality === 'exact' && !genderWarn && spellingWarn) return 'spelling_warning';
+  if (quality === 'exact' && genderWarn && spellingWarn) return 'gender_and_spelling';
+  if (quality === 'accent' && !genderWarn && !spellingWarn) return 'accent_missing';
+  if (quality === 'accent' && genderWarn && !spellingWarn) return 'accent_and_gender';
+  if (quality === 'accent' && !genderWarn && spellingWarn) return 'accent_and_spelling';
+  return 'accent_gender_spelling';
 }
 
 /**
@@ -57,8 +66,12 @@ export function gradeConjugationInput(
   if (!trimmed) return 'wrong';
 
   const expectedFull = formatPronounForm(pronoun, expectedVerbForm);
-  const { form: verbOnly, hadPronoun } = stripPronounPrefix(trimmed);
-  const candidates = [trimmed, verbOnly];
+  const { form: verbOnly, hadPronoun, hadVouzTypo } = stripPronounPrefix(trimmed);
+  const correctedFull = hadVouzTypo
+    ? trimmed.replace(/^vouz\s+/i, 'vous ')
+    : trimmed;
+  const { form: correctedVerbOnly } = stripPronounPrefix(correctedFull);
+  const candidates = [...new Set([trimmed, verbOnly, correctedFull, correctedVerbOnly])];
 
   let quality: MatchQuality = null;
   for (const c of candidates) {
@@ -90,7 +103,9 @@ export function gradeConjugationInput(
   }
 
   if (!quality) return 'wrong';
-  return combineGrade(quality, genderWarn);
+
+  const spellingWarn = pronoun === 'vous' && hadVouzTypo;
+  return combineGrade(quality, genderWarn, spellingWarn);
 }
 
 /** @deprecated Use gradeConjugationInput for keyboard mode. */
@@ -112,7 +127,21 @@ export function gradeHasAccentWarning(grade: AnswerGrade): boolean {
 }
 
 export function gradeHasGenderWarning(grade: AnswerGrade): boolean {
-  return grade === 'gender_warning' || grade === 'accent_and_gender';
+  return (
+    grade === 'gender_warning' ||
+    grade === 'accent_and_gender' ||
+    grade === 'gender_and_spelling' ||
+    grade === 'accent_gender_spelling'
+  );
+}
+
+export function gradeHasSpellingWarning(grade: AnswerGrade): boolean {
+  return (
+    grade === 'spelling_warning' ||
+    grade === 'accent_and_spelling' ||
+    grade === 'gender_and_spelling' ||
+    grade === 'accent_gender_spelling'
+  );
 }
 
 export function gradeFeedbackLabel(grade: AnswerGrade): string {
@@ -123,8 +152,16 @@ export function gradeFeedbackLabel(grade: AnswerGrade): string {
       return '✓ Correct — accents oubliés !';
     case 'gender_warning':
       return '✓ Correct — accord masculin/féminin !';
+    case 'spelling_warning':
+      return '✓ Correct — écris « vous », pas « vouz » !';
     case 'accent_and_gender':
       return '✓ Correct — accents et accord à revoir !';
+    case 'accent_and_spelling':
+      return '✓ Correct — accents et orthographe du pronom à revoir !';
+    case 'gender_and_spelling':
+      return '✓ Correct — accord et orthographe du pronom à revoir !';
+    case 'accent_gender_spelling':
+      return '✓ Correct — accents, accord et orthographe à revoir !';
     case 'wrong':
       return '✗ Incorrect';
   }

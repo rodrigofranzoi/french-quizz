@@ -15,6 +15,7 @@ import {
   gradeFeedbackLabel,
   gradeHasAccentWarning,
   gradeHasGenderWarning,
+  gradeHasSpellingWarning,
   isGradedCorrect,
 } from '../utils/normalize';
 import {
@@ -144,6 +145,8 @@ export function ConjugationGameScreen({
     results && Object.values(results).some(gradeHasAccentWarning);
   const hasGenderWarnings =
     results && Object.values(results).some(gradeHasGenderWarning);
+  const hasSpellingWarnings =
+    results && Object.values(results).some(gradeHasSpellingWarning);
 
   const screenTitle = isMc
     ? `Conjugaison — ${PRONOUN_LABELS[mcPronoun]}`
@@ -237,7 +240,8 @@ export function ConjugationGameScreen({
                       styles.expectedAnswer,
                       isGradedCorrect(results[p])
                         ? gradeHasAccentWarning(results[p]) ||
-                          gradeHasGenderWarning(results[p])
+                          gradeHasGenderWarning(results[p]) ||
+                          gradeHasSpellingWarning(results[p])
                           ? styles.expectedWarn
                           : styles.expectedOk
                         : styles.expectedKo,
@@ -255,6 +259,11 @@ export function ConjugationGameScreen({
                       Accord féminin attendu : {expectedFull(p)}
                     </Text>
                   )}
+                  {gradeHasSpellingWarning(results[p]) && (
+                    <Text style={styles.accentNote}>
+                      Orthographe du pronom : écris « vous », pas « vouz »
+                    </Text>
+                  )}
                 </>
               )}
             </View>
@@ -269,7 +278,7 @@ export function ConjugationGameScreen({
               style={[
                 styles.feedback,
                 allCorrect
-                  ? hasAccentWarnings || hasGenderWarnings
+                  ? hasAccentWarnings || hasGenderWarnings || hasSpellingWarnings
                     ? styles.warn
                     : styles.ok
                   : styles.ko,
@@ -277,13 +286,17 @@ export function ConjugationGameScreen({
             >
               <Text style={styles.feedbackText}>
                 {allCorrect
-                  ? hasAccentWarnings && hasGenderWarnings
-                    ? '✓ 6/6 — accents et accords à revoir !'
+                  ? [hasAccentWarnings, hasGenderWarnings, hasSpellingWarnings].filter(
+                      Boolean,
+                    ).length > 1
+                    ? '✓ 6/6 — quelques détails à revoir !'
                     : hasAccentWarnings
                       ? '✓ 6/6 — accents oubliés sur certaines réponses !'
                       : hasGenderWarnings
                         ? '✓ 6/6 — accord masculin/féminin à revoir !'
-                        : '✓ Parfait — 6/6 !'
+                        : hasSpellingWarnings
+                          ? '✓ 6/6 — orthographe du pronom (vous) à revoir !'
+                          : '✓ Parfait — 6/6 !'
                   : `✗ ${Object.values(results!).filter(isGradedCorrect).length}/6 correct(s)`}
               </Text>
               <ConjugationTable

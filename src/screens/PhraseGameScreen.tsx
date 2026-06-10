@@ -17,6 +17,7 @@ import {
   gradeFeedbackLabel,
   gradeHasAccentWarning,
   gradeHasGenderWarning,
+  gradeHasSpellingWarning,
   isGradedCorrect,
 } from '../utils/normalize';
 import {
@@ -78,7 +79,9 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
   const feedbackStyle =
     grade === 'wrong'
       ? styles.ko
-      : gradeHasAccentWarning(grade!) || gradeHasGenderWarning(grade!)
+      : gradeHasAccentWarning(grade!) ||
+          gradeHasGenderWarning(grade!) ||
+          gradeHasSpellingWarning(grade!)
         ? styles.warn
         : styles.ok;
 
@@ -163,6 +166,11 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
               {gradeHasGenderWarning(grade) && (
                 <Text style={styles.accentNote}>
                   Accord féminin attendu avec {question.pronoun} : {expectedFull}
+                </Text>
+              )}
+              {gradeHasSpellingWarning(grade) && (
+                <Text style={styles.accentNote}>
+                  Orthographe du pronom : écris « vous », pas « vouz »
                 </Text>
               )}
               {grade === 'wrong' && input.trim().length > 0 && (

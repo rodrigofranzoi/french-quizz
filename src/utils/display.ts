@@ -17,19 +17,24 @@ export function formatPronounForm(pronoun: Pronoun, form: string): string {
 }
 
 const SUBJECT_PREFIX =
-  /^(je|j'|tu|il|elle|nous|vous|ils|elles)\s+/i;
+  /^(je|j'|tu|il|elle|nous|vous|vouz|ils|elles)\s+/i;
 
 /** Strip an optional subject pronoun from a typed answer. */
 export function stripPronounPrefix(text: string): {
   form: string;
   hadPronoun: boolean;
+  hadVouzTypo: boolean;
 } {
   const trimmed = text.trim().replace(/\s+/g, ' ');
   const match = trimmed.match(SUBJECT_PREFIX);
   if (match) {
-    return { form: trimmed.slice(match[0].length).trim(), hadPronoun: true };
+    return {
+      form: trimmed.slice(match[0].length).trim(),
+      hadPronoun: true,
+      hadVouzTypo: match[1].toLowerCase() === 'vouz',
+    };
   }
-  return { form: trimmed, hadPronoun: false };
+  return { form: trimmed, hadPronoun: false, hadVouzTypo: false };
 }
 
 /** Remove subject pronoun from phrase prefix — keyboard answers include the pronoun. */
