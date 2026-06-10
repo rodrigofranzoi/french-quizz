@@ -124,9 +124,13 @@ export function ConjugationGameScreen({
   const hasAccentWarnings =
     results && Object.values(results).some((r) => r === 'accent_missing');
 
+  const screenTitle = isMc
+    ? `Conjugaison — ${PRONOUN_LABELS[mcPronoun]}`
+    : 'Conjugaison complète';
+
   return (
     <ScreenLayout
-      title="Conjugaison complète"
+      title={screenTitle}
       subtitle={
         isMc
           ? `Score : ${score.correct} / ${score.total}`
@@ -142,11 +146,11 @@ export function ConjugationGameScreen({
       <View style={styles.verbCard}>
         <Text style={styles.verb}>{question.verb.infinitive}</Text>
         <Text style={styles.english}>{question.verb.english}</Text>
-        <Text style={styles.instruction}>
-          {isMc
-            ? `Choisis la bonne forme pour « ${PRONOUN_LABELS[mcPronoun]} »`
-            : 'Écris la forme complète avec pronom : j\'ai payé, nous lisons…'}
-        </Text>
+        {!isMc && (
+          <Text style={styles.instruction}>
+            Écris la forme complète avec pronom : j&apos;ai payé, nous lisons…
+          </Text>
+        )}
       </View>
 
       {isMc ? (
@@ -154,7 +158,7 @@ export function ConjugationGameScreen({
           {mcChoices.map((choice) => (
             <Button
               key={choice}
-              title={formatPronounForm(mcPronoun, choice)}
+              title={choice}
               variant={
                 mcFeedback
                   ? answersMatch(choice, question.answers[mcPronoun])
@@ -199,7 +203,7 @@ export function ConjugationGameScreen({
                 onChangeText={(text) =>
                   setInputs((prev) => ({ ...prev, [p]: text }))
                 }
-                placeholder={`ex. ${expectedFull(p)}`}
+                placeholder="…"
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!checked}
