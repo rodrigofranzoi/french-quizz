@@ -221,6 +221,36 @@ export function getAllConjugations(
   );
 }
 
+/** Masculine passé composé (être) for elle/elles — used for gender warnings. */
+export function getMasculineEtrePasseCompose(
+  verb: VerbEntry,
+  pronoun: 'elle' | 'elles',
+  negative: boolean,
+): string | null {
+  if (verb.auxiliary !== 'etre') return null;
+
+  const jeForm = negative
+    ? getNegativeConjugation(verb, 'passe_compose', 'je')
+    : verb.passeCompose.je;
+
+  let pp: string;
+  if (negative) {
+    pp = jeForm.replace(/^ne suis pas\s+/, '');
+  } else {
+    pp = jeForm.replace(/^suis\s+/, '');
+  }
+
+  if (pronoun === 'elles' && !pp.endsWith('s')) {
+    pp = `${pp}s`;
+  }
+
+  if (negative) {
+    const negAux = pronoun === 'elle' ? "n'est pas" : 'ne sont pas';
+    return `${negAux} ${pp}`;
+  }
+  return `${ETRE_PC[pronoun]} ${pp}`;
+}
+
 export function tenseLabel(tense: Tense): string {
   switch (tense) {
     case 'present':

@@ -13,7 +13,10 @@ import {
 import {
   type AnswerGrade,
   answersMatch,
-  gradeAnswer,
+  gradeConjugationInput,
+  gradeFeedbackLabel,
+  gradeHasAccentWarning,
+  gradeHasGenderWarning,
   isGradedCorrect,
 } from '../utils/normalize';
 import {
@@ -54,7 +57,14 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
 
   const checkAnswer = (answer: string) => {
     const result = isKeyboard
-      ? gradeAnswer(answer, expectedFull)
+      ? gradeConjugationInput(
+          answer,
+          question.answer,
+          question.pronoun,
+          question.verb,
+          question.tense,
+          question.negative,
+        )
       : answersMatch(answer, question.answer)
         ? 'correct'
         : 'wrong';
@@ -66,7 +76,11 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
   };
 
   const feedbackStyle =
-    grade === 'wrong' ? styles.ko : grade === 'accent_missing' ? styles.warn : styles.ok;
+    grade === 'wrong'
+      ? styles.ko
+      : gradeHasAccentWarning(grade!) || gradeHasGenderWarning(grade!)
+        ? styles.warn
+        : styles.ok;
 
   return (
     <ScreenLayout
@@ -99,7 +113,7 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
             style={[
               styles.input,
               grade === 'correct' && styles.inputOk,
-              grade === 'accent_missing' && styles.inputWarn,
+              grade && grade !== 'wrong' && grade !== 'correct' && styles.inputWarn,
               grade === 'wrong' && styles.inputKo,
             ]}
             value={input}
@@ -136,18 +150,19 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
 
       {grade && (
         <View style={[styles.feedback, feedbackStyle]}>
-          <Text style={styles.feedbackText}>
-            {grade === 'correct' && '✓ Correct !'}
-            {grade === 'accent_missing' && '✓ Correct — accents oubliés !'}
-            {grade === 'wrong' && '✗ Incorrect'}
-          </Text>
+          <Text style={styles.feedbackText}>{gradeFeedbackLabel(grade)}</Text>
           {isKeyboard && (
             <>
               <Text style={styles.answerLabel}>Réponse attendue :</Text>
               <Text style={styles.expectedBlank}>{expectedFull}</Text>
-              {grade === 'accent_missing' && (
+              {gradeHasAccentWarning(grade) && (
                 <Text style={styles.accentNote}>
                   N&apos;oublie pas les accents : {expectedFull}
+                </Text>
+              )}
+              {gradeHasGenderWarning(grade) && (
+                <Text style={styles.accentNote}>
+                  Accord féminin attendu avec {question.pronoun} : {expectedFull}
                 </Text>
               )}
               {grade === 'wrong' && input.trim().length > 0 && (

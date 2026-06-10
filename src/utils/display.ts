@@ -16,6 +16,22 @@ export function formatPronounForm(pronoun: Pronoun, form: string): string {
   return `${pronoun} ${form}`;
 }
 
+const SUBJECT_PREFIX =
+  /^(je|j'|tu|il|elle|nous|vous|ils|elles)\s+/i;
+
+/** Strip an optional subject pronoun from a typed answer. */
+export function stripPronounPrefix(text: string): {
+  form: string;
+  hadPronoun: boolean;
+} {
+  const trimmed = text.trim().replace(/\s+/g, ' ');
+  const match = trimmed.match(SUBJECT_PREFIX);
+  if (match) {
+    return { form: trimmed.slice(match[0].length).trim(), hadPronoun: true };
+  }
+  return { form: trimmed, hadPronoun: false };
+}
+
 /** Remove subject pronoun from phrase prefix — keyboard answers include the pronoun. */
 export function stripSubjectFromPhraseBefore(
   before: string,

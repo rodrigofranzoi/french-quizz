@@ -11,7 +11,10 @@ import { formatPronounForm } from '../utils/display';
 import {
   type AnswerGrade,
   answersMatch,
-  gradeAnswer,
+  gradeConjugationInput,
+  gradeFeedbackLabel,
+  gradeHasAccentWarning,
+  gradeHasGenderWarning,
   isGradedCorrect,
 } from '../utils/normalize';
 import {
@@ -33,11 +36,20 @@ const PRONOUN_LABELS: Record<Pronoun, string> = {
   elles: 'elles',
 };
 
+const KEYBOARD_PRONOUN_TITLES: Record<Pronoun, string> = {
+  je: "je / j'",
+  tu: 'tu',
+  elle: 'il / elle',
+  nous: 'nous',
+  vous: 'vous',
+  elles: 'ils / elles',
+};
+
 function inputStyleForGrade(grade: AnswerGrade | undefined) {
-  if (grade === 'correct') return styles.inputOk;
-  if (grade === 'accent_missing') return styles.inputWarn;
+  if (!grade) return undefined;
   if (grade === 'wrong') return styles.inputKo;
-  return undefined;
+  if (grade === 'correct') return styles.inputOk;
+  return styles.inputWarn;
 }
 
 export function ConjugationGameScreen({
@@ -95,7 +107,14 @@ export function ConjugationGameScreen({
   const checkKeyboardAnswers = () => {
     const res = PRONOUNS.reduce(
       (acc, p) => {
-        acc[p] = gradeAnswer(inputs[p], expectedFull(p));
+        acc[p] = gradeConjugationInput(
+          inputs[p],
+          question.answers[p],
+          p,
+          question.verb,
+          question.tense,
+          question.negative,
+        );
         return acc;
       },
       {} as Record<Pronoun, AnswerGrade>,
@@ -122,7 +141,9 @@ export function ConjugationGameScreen({
   const allCorrect =
     results && Object.values(results).every(isGradedCorrect);
   const hasAccentWarnings =
-    results && Object.values(results).some((r) => r === 'accent_missing');
+    results && Object.values(results).some(gradeHasAccentWarning);
+  const hasGenderWarnings =
+    results && Object.values(results).some(gradeHasGenderWarning);
 
   const screenTitle = isMc
     ? `Conjugaison — ${PRONOUN_LABELS[mcPronoun]}`
@@ -148,7 +169,7 @@ export function ConjugationGameScreen({
         <Text style={styles.english}>{question.verb.english}</Text>
         {!isMc && (
           <Text style={styles.instruction}>
-            Écris la forme complète avec pronom : j&apos;ai payé, nous lisons…
+            Pronom optionnel (je/j&apos;, il/elle…) — accord féminin signalé si besoin
           </Text>
         )}
       </View>
@@ -197,6 +218,7 @@ export function ConjugationGameScreen({
         <>
           {PRONOUNS.map((p) => (
             <View key={p} style={styles.row}>
+              <Text style={styles.pronounTitle}>{KEYBOARD_PRONOUN_TITLES[p]}</Text>
               <TextInput
                 style={[styles.input, checked && inputStyleForGrade(results?.[p])]}
                 value={inputs[p]}
@@ -214,7 +236,8 @@ export function ConjugationGameScreen({
                     style={[
                       styles.expectedAnswer,
                       isGradedCorrect(results[p])
-                        ? results[p] === 'accent_missing'
+                        ? gradeHasAccentWarning(results[p]) ||
+                          gradeHasGenderWarning(results[p])
                           ? styles.expectedWarn
                           : styles.expectedOk
                         : styles.expectedKo,
@@ -222,9 +245,14 @@ export function ConjugationGameScreen({
                   >
                     → {expectedFull(p)}
                   </Text>
-                  {results[p] === 'accent_missing' && (
+                  {gradeHasAccentWarning(results[p]) && (
                     <Text style={styles.accentNote}>
                       Accents oubliés — écris : {expectedFull(p)}
+                    </Text>
+                  )}
+                  {gradeHasGenderWarning(results[p]) && (
+                    <Text style={styles.accentNote}>
+                      Accord féminin attendu : {expectedFull(p)}
                     </Text>
                   )}
                 </>
@@ -241,7 +269,7 @@ export function ConjugationGameScreen({
               style={[
                 styles.feedback,
                 allCorrect
-                  ? hasAccentWarnings
+                  ? hasAccentWarnings || hasGenderWarnings
                     ? styles.warn
                     : styles.ok
                   : styles.ko,
@@ -249,9 +277,13 @@ export function ConjugationGameScreen({
             >
               <Text style={styles.feedbackText}>
                 {allCorrect
-                  ? hasAccentWarnings
-                    ? '✓ 6/6 — accents oubliés sur certaines réponses !'
-                    : '✓ Parfait — 6/6 !'
+                  ? hasAccentWarnings && hasGenderWarnings
+                    ? '✓ 6/6 — accents et accords à revoir !'
+                    : hasAccentWarnings
+                      ? '✓ 6/6 — accents oubliés sur certaines réponses !'
+                      : hasGenderWarnings
+                        ? '✓ 6/6 — accord masculin/féminin à revoir !'
+                        : '✓ Parfait — 6/6 !'
                   : `✗ ${Object.values(results!).filter(isGradedCorrect).length}/6 correct(s)`}
               </Text>
               <ConjugationTable
@@ -320,6 +352,12 @@ const styles = StyleSheet.create({
   },
   row: {
     marginBottom: spacing.md,
+  },
+  pronounTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.xs,
   },
   input: {
     backgroundColor: colors.surface,
