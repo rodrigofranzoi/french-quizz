@@ -4,10 +4,17 @@ export interface PhraseContext {
   before: string;
   after: string;
   pronoun: Pronoun;
+  negative?: boolean;
 }
 
 export const PHRASE_CONTEXTS: PhraseContext[] = [
-  { before: 'Hier, ', after: ' le livre à la bibliothèque.', pronoun: 'je' },
+  { before: 'Chaque jour, je ', after: ' le journal le matin.', pronoun: 'je' },
+  { before: 'Souvent, tu ', after: ' du piano le soir.', pronoun: 'tu' },
+  { before: 'En ce moment, elle ', after: ' un roman intéressant.', pronoun: 'elle' },
+  { before: 'Nous ', after: ' toujours à l\'heure.', pronoun: 'nous' },
+  { before: 'Vous ', after: ' le français avec patience.', pronoun: 'vous' },
+  { before: 'Elles ', after: ' au parc tous les mercredis.', pronoun: 'elles' },
+  { before: 'Hier, je ', after: ' le livre à la bibliothèque.', pronoun: 'je' },
   { before: 'Demain, tu ', after: ' le bus à 8 heures.', pronoun: 'tu' },
   { before: 'La semaine dernière, elle ', after: ' un gâteau délicieux.', pronoun: 'elle' },
   { before: 'L\'année prochaine, nous ', after: ' en vacances en France.', pronoun: 'nous' },
@@ -19,16 +26,16 @@ export const PHRASE_CONTEXTS: PhraseContext[] = [
   { before: 'Ce soir, nous ', after: ' le dîner ensemble.', pronoun: 'nous' },
   { before: 'Plus tard, vous ', after: ' la réunion importante.', pronoun: 'vous' },
   { before: 'Hier, elles ', after: ' leurs devoirs rapidement.', pronoun: 'elles' },
-  { before: 'Hier, je ne ', after: ' pas mon parapluie.', pronoun: 'je' },
-  { before: 'Demain, tu ne ', after: ' pas en retard.', pronoun: 'tu' },
-  { before: 'Elle ne ', after: ' pas la vérité hier.', pronoun: 'elle' },
-  { before: 'Nous ne ', after: ' pas encore la réponse.', pronoun: 'nous' },
-  { before: 'Vous ne ', after: ' pas ce film, n\'est-ce pas ?', pronoun: 'vous' },
-  { before: 'Elles ne ', after: ' pas à la fête samedi.', pronoun: 'elles' },
-  { before: 'Je ne ', after: ' pas sortir ce soir.', pronoun: 'je' },
-  { before: 'Tu ne ', after: ' pas ce livre demain.', pronoun: 'tu' },
-  { before: 'Elle ne ', after: ' pas travailler lundi.', pronoun: 'elle' },
-  { before: 'Nous ne ', after: ' pas voyager cet été.', pronoun: 'nous' },
-  { before: 'Vous ne ', after: ' pas nous voir bientôt.', pronoun: 'vous' },
-  { before: 'Elles ne ', after: ' pas acheter cette maison.', pronoun: 'elles' },
+  { before: 'Hier, je ', after: ' mon parapluie.', pronoun: 'je', negative: true },
+  { before: 'Demain, tu ', after: ' en retard.', pronoun: 'tu', negative: true },
+  { before: 'La semaine dernière, elle ', after: ' la vérité.', pronoun: 'elle', negative: true },
+  { before: 'Nous ', after: ' encore la réponse.', pronoun: 'nous', negative: true },
+  { before: 'Vous ', after: ' ce film, n\'est-ce pas ?', pronoun: 'vous', negative: true },
+  { before: 'Samedi, elles ', after: ' à la fête.', pronoun: 'elles', negative: true },
+  { before: 'Ce soir, je ', after: ' sortir.', pronoun: 'je', negative: true },
+  { before: 'Demain, tu ', after: ' ce livre.', pronoun: 'tu', negative: true },
+  { before: 'Lundi, elle ', after: ' travailler.', pronoun: 'elle', negative: true },
+  { before: 'Cet été, nous ', after: ' voyager.', pronoun: 'nous', negative: true },
+  { before: 'Bientôt, vous ', after: ' nous voir.', pronoun: 'vous', negative: true },
+  { before: 'Elles ', after: ' acheter cette maison.', pronoun: 'elles', negative: true },
 ];

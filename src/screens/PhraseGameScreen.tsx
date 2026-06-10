@@ -1,10 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../components/Button';
+import { ConjugationTable } from '../components/ConjugationTable';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { colors, spacing } from '../theme';
 import type { GameSettings } from '../types';
 import { tenseLabel } from '../utils/conjugation';
+import { assemblePhrase, formatPronounForm } from '../utils/display';
 import { answersMatch } from '../utils/normalize';
 import {
   generatePhraseChoices,
@@ -45,13 +47,6 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
     }));
   };
 
-  const displayBefore = question.negative
-    ? question.before
-    : question.before;
-  const displayAfter = question.negative
-    ? question.after
-    : question.after;
-
   return (
     <ScreenLayout
       title="Compléter la phrase"
@@ -65,9 +60,9 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
 
       <View style={styles.phraseCard}>
         <Text style={styles.phrase}>
-          {displayBefore}
+          {question.before}
           <Text style={styles.blank}> ___ </Text>
-          {displayAfter}
+          {question.after}
         </Text>
         <Text style={styles.hint}>Verbe : {question.hint}</Text>
       </View>
@@ -78,7 +73,11 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="Ta réponse…"
+            placeholder={
+              question.negative
+                ? 'ex. n\'ai pas oublié / ne vais pas oublier…'
+                : 'Ta réponse…'
+            }
             autoCapitalize="none"
             autoCorrect={false}
             editable={feedback === null}
@@ -93,7 +92,13 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
             <Button
               key={choice}
               title={choice}
-              variant={feedback ? (answersMatch(choice, question.answer) ? 'primary' : 'outline') : 'outline'}
+              variant={
+                feedback
+                  ? answersMatch(choice, question.answer)
+                    ? 'primary'
+                    : 'outline'
+                  : 'outline'
+              }
               onPress={() => feedback === null && checkAnswer(choice)}
               disabled={feedback !== null}
               style={styles.choice}
@@ -105,8 +110,29 @@ export function PhraseGameScreen({ settings, onBack }: PhraseGameScreenProps) {
       {feedback && (
         <View style={[styles.feedback, feedback === 'correct' ? styles.ok : styles.ko]}>
           <Text style={styles.feedbackText}>
-            {feedback === 'correct' ? '✓ Correct !' : `✗ Réponse : ${question.answer}`}
+            {feedback === 'correct' ? '✓ Correct !' : '✗ Incorrect'}
           </Text>
+          {settings.inputMode === 'keyboard' && (
+            <>
+              <Text style={styles.answerLabel}>Réponse attendue :</Text>
+              <Text style={styles.expectedBlank}>
+                {formatPronounForm(question.pronoun, question.answer)}
+              </Text>
+              {input.trim().length > 0 && !answersMatch(input, question.answer) && (
+                <Text style={styles.yourAnswer}>Ta réponse : {input}</Text>
+              )}
+            </>
+          )}
+          <Text style={styles.fullPhrase}>
+            {assemblePhrase(question.before, question.answer, question.after)}
+          </Text>
+          <ConjugationTable
+            verb={question.verb}
+            tense={question.tense}
+            negative={question.negative}
+            highlightPronoun={question.pronoun}
+            showFullForms={settings.inputMode === 'keyboard'}
+          />
           <Button title="Question suivante" onPress={nextQuestion} style={styles.next} />
         </View>
       )}
@@ -159,9 +185,9 @@ const styles = StyleSheet.create({
   },
   hint: {
     marginTop: spacing.md,
-    fontSize: 14,
-    color: colors.textMuted,
-    fontStyle: 'italic',
+    fontSize: 15,
+    color: colors.text,
+    fontWeight: '600',
   },
   input: {
     backgroundColor: colors.surface,
@@ -191,9 +217,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  answerLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textMuted,
+    marginBottom: spacing.xs,
+  },
+  expectedBlank: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: spacing.sm,
+  },
+  yourAnswer: {
+    fontSize: 15,
+    color: colors.error,
+    marginBottom: spacing.sm,
+    fontStyle: 'italic',
+  },
+  fullPhrase: {
+    fontSize: 16,
+    color: colors.text,
+    fontStyle: 'italic',
+    marginBottom: spacing.sm,
+    lineHeight: 24,
   },
   next: {
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
 });

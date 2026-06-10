@@ -12,7 +12,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
   return (
     <ScreenLayout
       title="Quiz de Français"
-      subtitle="Entraîne-toi au passé composé, au futur proche et au futur simple."
+      subtitle="Entraîne-toi au présent, passé composé, futur proche et futur simple."
     >
       <View style={styles.card}>
         <Text style={styles.flag}>🇫🇷</Text>

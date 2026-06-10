@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../components/Button';
+import { ConjugationTable } from '../components/ConjugationTable';
 import { ScreenLayout } from '../components/ScreenLayout';
 import { colors, spacing } from '../theme';
 import type { GameSettings, Pronoun } from '../types';
 import { PRONOUNS } from '../types';
 import { tenseLabel } from '../utils/conjugation';
+import { formatPronounForm } from '../utils/display';
 import { answersMatch } from '../utils/normalize';
 import {
   generateConjugationChoices,
@@ -143,7 +145,7 @@ export function ConjugationGameScreen({
           {mcChoices.map((choice) => (
             <Button
               key={choice}
-              title={`${PRONOUN_LABELS[currentPronoun]} ${choice}`}
+              title={formatPronounForm(currentPronoun, choice)}
               variant={
                 mcFeedback
                   ? answersMatch(choice, question.answers[currentPronoun])
@@ -168,6 +170,12 @@ export function ConjugationGameScreen({
                   ? '✓ Correct !'
                   : `✗ Réponse : ${question.answers[currentPronoun]}`}
               </Text>
+              <ConjugationTable
+                verb={question.verb}
+                tense={question.tense}
+                negative={question.negative}
+                highlightPronoun={currentPronoun}
+              />
               <Button
                 title={
                   pronounIndex < PRONOUNS.length - 1
@@ -200,8 +208,15 @@ export function ConjugationGameScreen({
                 autoCorrect={false}
                 editable={!checked}
               />
-              {checked && results && !results[p] && (
-                <Text style={styles.correctAnswer}>{question.answers[p]}</Text>
+              {checked && results && (
+                <Text
+                  style={[
+                    styles.expectedAnswer,
+                    results[p] ? styles.expectedOk : styles.expectedKo,
+                  ]}
+                >
+                  → {formatPronounForm(p, question.answers[p])}
+                </Text>
               )}
             </View>
           ))}
@@ -219,6 +234,12 @@ export function ConjugationGameScreen({
                   ? '✓ Parfait — 6/6 !'
                   : `✗ ${Object.values(results!).filter(Boolean).length}/6 correct(s)`}
               </Text>
+              <ConjugationTable
+                verb={question.verb}
+                tense={question.tense}
+                negative={question.negative}
+                showFullForms
+              />
               <Button title="Verbe suivant" onPress={nextQuestion} />
             </View>
           )}
@@ -304,11 +325,16 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
     backgroundColor: '#FEF2F2',
   },
-  correctAnswer: {
+  expectedAnswer: {
     fontSize: 14,
-    color: colors.error,
     marginTop: spacing.xs,
-    fontStyle: 'italic',
+    fontWeight: '500',
+  },
+  expectedOk: {
+    color: colors.success,
+  },
+  expectedKo: {
+    color: colors.error,
   },
   choice: {
     marginBottom: spacing.sm,

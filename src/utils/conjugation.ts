@@ -2,12 +2,30 @@ import type { Pronoun, Tense, VerbEntry } from '../types';
 import { PRONOUNS } from '../types';
 
 const AVOIR_PC: Record<Pronoun, string> = {
-  je: "j'ai",
+  je: 'ai',
   tu: 'as',
   elle: 'a',
   nous: 'avons',
   vous: 'avez',
   elles: 'ont',
+};
+
+const PRESENT_ER: Record<Pronoun, string> = {
+  je: 'e',
+  tu: 'es',
+  elle: 'e',
+  nous: 'ons',
+  vous: 'ez',
+  elles: 'ent',
+};
+
+const PRESENT_RE: Record<Pronoun, string> = {
+  je: 's',
+  tu: 's',
+  elle: '',
+  nous: 'ons',
+  vous: 'ez',
+  elles: 'ent',
 };
 
 const ETRE_PC: Record<Pronoun, string> = {
@@ -37,16 +55,34 @@ const FS_ENDINGS: Record<Pronoun, string> = {
   elles: 'ont',
 };
 
+export function buildPresentEr(infinitive: string): Record<Pronoun, string> {
+  const stem = infinitive.slice(0, -2);
+  return PRONOUNS.reduce(
+    (acc, p) => {
+      acc[p] = stem + PRESENT_ER[p];
+      return acc;
+    },
+    {} as Record<Pronoun, string>,
+  );
+}
+
+export function buildPresentRe(infinitive: string): Record<Pronoun, string> {
+  const stem = infinitive.slice(0, -2);
+  return PRONOUNS.reduce(
+    (acc, p) => {
+      acc[p] = stem + PRESENT_RE[p];
+      return acc;
+    },
+    {} as Record<Pronoun, string>,
+  );
+}
+
 export function buildPasseComposeAvoir(
   pastParticiple: string,
   feminine?: Partial<Record<'elle' | 'elles', string>>,
 ): Record<Pronoun, string> {
-  const base = (p: Pronoun, pp: string) => {
-    const aux = AVOIR_PC[p];
-    return p === 'je' ? `${aux} ${pp}` : `${aux} ${pp}`;
-  };
   return {
-    je: base('je', pastParticiple),
+    je: `ai ${pastParticiple}`,
     tu: `as ${pastParticiple}`,
     elle: `a ${feminine?.elle ?? pastParticiple}`,
     nous: `avons ${pastParticiple}`,
@@ -96,6 +132,8 @@ export function getConjugation(
   pronoun: Pronoun,
 ): string {
   switch (tense) {
+    case 'present':
+      return verb.present[pronoun];
     case 'passe_compose':
       return verb.passeCompose[pronoun];
     case 'futur_proche':
@@ -113,25 +151,28 @@ export function getNegativeConjugation(
   const form = getConjugation(verb, tense, pronoun);
 
   switch (tense) {
+    case 'present': {
+      if (pronoun === 'je') {
+        const startsVowel = /^[aeiouhéèêëàâîïôùûü]/i.test(form);
+        return startsVowel ? `n'${form} pas` : `ne ${form} pas`;
+      }
+      return `ne ${form} pas`;
+    }
     case 'passe_compose': {
       if (verb.auxiliary === 'etre') {
         const aux = ETRE_PC[pronoun];
         const pp = form.replace(/^(suis|es|est|sommes|êtes|sont) /, '');
-        const negAux =
-          pronoun === 'je'
-            ? "ne suis pas"
-            : pronoun === 'tu'
-              ? 'ne es pas'
-              : pronoun === 'elle'
-                ? "n'est pas"
-                : pronoun === 'nous'
-                  ? 'ne sommes pas'
-                  : pronoun === 'vous'
-                    ? "n'êtes pas"
-                    : 'ne sont pas';
-        return `${negAux} ${pp}`;
+        const negAux: Record<Pronoun, string> = {
+          je: 'ne suis pas',
+          tu: "n'es pas",
+          elle: "n'est pas",
+          nous: 'ne sommes pas',
+          vous: "n'êtes pas",
+          elles: 'ne sont pas',
+        };
+        return `${negAux[pronoun]} ${pp}`;
       }
-      const pp = form.replace(/^(j'ai|as|a|avons|avez|ont) /, '');
+      const pp = form.replace(/^(ai|as|a|avons|avez|ont) /, '');
       const negMap: Record<Pronoun, string> = {
         je: "n'ai pas",
         tu: "n'as pas",
@@ -182,6 +223,8 @@ export function getAllConjugations(
 
 export function tenseLabel(tense: Tense): string {
   switch (tense) {
+    case 'present':
+      return 'Présent';
     case 'passe_compose':
       return 'Passé composé';
     case 'futur_proche':

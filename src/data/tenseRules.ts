@@ -9,6 +9,28 @@ export interface TenseRule {
 
 export const TENSE_RULES: TenseRule[] = [
   {
+    id: 'present',
+    title: 'Présent',
+    formation:
+      'Radical + terminaisons selon le groupe du verbe.\n\n' +
+      '• -er : -e, -es, -e, -ons, -ez, -ent (parler → je parle, nous parlons)\n' +
+      '• -ir / -re : terminaisons variées (finir → finis, finissons / vendre → vends, vendons)\n' +
+      '• Nombreux verbes irréguliers : être, avoir, faire, aller, venir, pouvoir…',
+    examples: [
+      'Je parle français.',
+      'Tu lis un livre.',
+      'Elle arrive à l\'heure.',
+      'Nous préparons le dîner.',
+    ],
+    negative:
+      'ne + verbe conjugué + pas\n\n' +
+      'Exemples : Je ne parle pas. / Tu n\'oublies pas. / Nous n\'arrivons pas.',
+    tips: [
+      'Le présent exprime une action habituelle, un fait actuel ou une vérité générale.',
+      'Attention aux verbes en -ger (mangeons) et -cer (commençons) à la 1ʳᵉ personne du pluriel.',
+    ],
+  },
+  {
     id: 'passe_compose',
     title: 'Passé composé',
     formation:

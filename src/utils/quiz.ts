@@ -39,9 +39,9 @@ export function generatePhraseQuestion(settings: GameSettings): PhraseQuestion {
   const tense = pick(settings.tenses);
   const pool = settings.includeNegative
     ? PHRASE_CONTEXTS
-    : PHRASE_CONTEXTS.filter((c) => !c.before.includes(' ne '));
+    : PHRASE_CONTEXTS.filter((c) => !c.negative);
   const context = pick(pool);
-  const negative = context.before.includes(' ne ') || context.after.startsWith(' pas');
+  const negative = context.negative ?? false;
   const pronoun = context.pronoun;
 
   const answer = negative
@@ -56,7 +56,7 @@ export function generatePhraseQuestion(settings: GameSettings): PhraseQuestion {
     before: context.before,
     after: context.after,
     answer,
-    hint: `${verb.infinitive} (${tenseLabel(tense)})`,
+    hint: `${verb.infinitive} — ${verb.english} (${tenseLabel(tense)})`,
   };
 }
 

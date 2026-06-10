@@ -1,7 +1,7 @@
 export const PRONOUNS = ['je', 'tu', 'elle', 'nous', 'vous', 'elles'] as const;
 export type Pronoun = (typeof PRONOUNS)[number];
 
-export const TENSES = ['passe_compose', 'futur_proche', 'futur_simple'] as const;
+export const TENSES = ['present', 'passe_compose', 'futur_proche', 'futur_simple'] as const;
 export type Tense = (typeof TENSES)[number];
 
 export type InputMode = 'multiple_choice' | 'keyboard';
@@ -24,6 +24,7 @@ export interface VerbEntry {
   infinitive: string;
   english: string;
   auxiliary: 'avoir' | 'etre' | 'impersonal';
+  present: Record<Pronoun, string>;
   passeCompose: Record<Pronoun, string>;
   futurProche: Record<Pronoun, string>;
   futurSimple: Record<Pronoun, string>;
