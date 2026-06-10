@@ -8,7 +8,7 @@ import { PRONOUNS } from '../types';
 import { tenseLabel } from '../utils/conjugation';
 import { answersMatch } from '../utils/normalize';
 import {
-  generateConjugationDistractor,
+  generateConjugationChoices,
   generateConjugationQuestion,
 } from '../utils/quiz';
 
@@ -25,15 +25,6 @@ const PRONOUN_LABELS: Record<Pronoun, string> = {
   vous: 'vous',
   elles: 'elles',
 };
-
-function shuffle<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
 
 export function ConjugationGameScreen({
   settings,
@@ -62,19 +53,13 @@ export function ConjugationGameScreen({
   const mcChoices = useMemo(() => {
     if (!isMc) return [];
     const correct = question.answers[currentPronoun];
-    const wrong = new Set<string>();
-    while (wrong.size < 3) {
-      wrong.add(
-        generateConjugationDistractor(
-          question.verb,
-          question.tense,
-          currentPronoun,
-          question.negative,
-          correct,
-        ),
-      );
-    }
-    return shuffle([correct, ...Array.from(wrong)]);
+    return generateConjugationChoices(
+      question.verb,
+      question.tense,
+      currentPronoun,
+      question.negative,
+      correct,
+    );
   }, [isMc, question, currentPronoun]);
 
   const resetRound = useCallback(() => {

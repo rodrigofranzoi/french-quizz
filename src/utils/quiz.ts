@@ -8,7 +8,7 @@ import type {
   Tense,
   VerbEntry,
 } from '../types';
-import { PRONOUNS } from '../types';
+import { PRONOUNS, TENSES } from '../types';
 import {
   getAllConjugations,
   getConjugation,
@@ -79,44 +79,88 @@ export function generateConjugationQuestion(
   };
 }
 
-export function generatePhraseChoices(
-  question: PhraseQuestion,
-  count = 4,
-): string[] {
-  const wrong = new Set<string>();
-  const otherTenses: Tense[] = ['passe_compose', 'futur_proche', 'futur_simple'].filter(
-    (t) => t !== question.tense,
-  ) as Tense[];
-
-  while (wrong.size < count - 1) {
-    const v = pick(VERBS);
-    const t = Math.random() > 0.5 ? question.tense : pick(otherTenses);
-    const p = pick(PRONOUNS);
-    const form = question.negative
-      ? getNegativeConjugation(v, t, p)
-      : getConjugation(v, t, p);
-    if (form !== question.answer) wrong.add(form);
-  }
-
-  return shuffle([question.answer, ...Array.from(wrong)]);
+function formFor(
+  verb: VerbEntry,
+  tense: Tense,
+  pronoun: Pronoun,
+  negative: boolean,
+): string {
+  return negative
+    ? getNegativeConjugation(verb, tense, pronoun)
+    : getConjugation(verb, tense, pronoun);
 }
 
-export function generateConjugationDistractor(
+/** Wrong answers from the same verb: other tenses, pronouns, or polarity. */
+function getSameVerbDistractors(
   verb: VerbEntry,
   tense: Tense,
   pronoun: Pronoun,
   negative: boolean,
   correct: string,
-): string {
-  const attempts = 20;
-  for (let i = 0; i < attempts; i++) {
-    const v = Math.random() > 0.5 ? verb : pick(VERBS);
-    const t = Math.random() > 0.5 ? tense : pick(['passe_compose', 'futur_proche', 'futur_simple'] as Tense[]);
-    const p = Math.random() > 0.5 ? pronoun : pick(PRONOUNS);
-    const form = negative
-      ? getNegativeConjugation(v, t, p)
-      : getConjugation(v, t, p);
-    if (form !== correct) return form;
+): string[] {
+  const candidates = new Set<string>();
+
+  for (const t of TENSES) {
+    if (t !== tense) {
+      candidates.add(formFor(verb, t, pronoun, negative));
+    }
   }
-  return correct + 's';
+
+  for (const p of PRONOUNS) {
+    if (p !== pronoun) {
+      candidates.add(formFor(verb, tense, p, negative));
+    }
+  }
+
+  candidates.add(formFor(verb, tense, pronoun, !negative));
+
+  for (const t of TENSES) {
+    for (const p of PRONOUNS) {
+      if (t === tense && p === pronoun) continue;
+      candidates.add(formFor(verb, t, p, negative));
+    }
+  }
+
+  candidates.delete(correct);
+  return shuffle(Array.from(candidates));
+}
+
+function pickDistractors(
+  verb: VerbEntry,
+  tense: Tense,
+  pronoun: Pronoun,
+  negative: boolean,
+  correct: string,
+  count: number,
+): string[] {
+  const pool = getSameVerbDistractors(verb, tense, pronoun, negative, correct);
+  return pool.slice(0, count);
+}
+
+export function generatePhraseChoices(
+  question: PhraseQuestion,
+  count = 4,
+): string[] {
+  const wrong = pickDistractors(
+    question.verb,
+    question.tense,
+    question.pronoun,
+    question.negative,
+    question.answer,
+    count - 1,
+  );
+
+  return shuffle([question.answer, ...wrong]);
+}
+
+export function generateConjugationChoices(
+  verb: VerbEntry,
+  tense: Tense,
+  pronoun: Pronoun,
+  negative: boolean,
+  correct: string,
+  count = 4,
+): string[] {
+  const wrong = pickDistractors(verb, tense, pronoun, negative, correct, count - 1);
+  return shuffle([correct, ...wrong]);
 }
