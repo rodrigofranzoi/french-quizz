@@ -29,17 +29,68 @@ function shuffle<T>(arr: T[]): T[] {
   return copy;
 }
 
-function eligibleVerbs(tenses: Tense[]): VerbEntry[] {
-  return VERBS.filter((v) => v.infinitive !== 'pleuvoir' || tenses.length > 0);
+function matchesVerbFilter(verb: VerbEntry, filter: GameSettings['verbFilter']): boolean {
+  if (filter === 'regular') return verb.regular;
+  if (filter === 'irregular') return !verb.regular;
+  return true;
+}
+
+export function getEligibleVerbs(
+  settings: GameSettings,
+  forConjugation = false,
+): VerbEntry[] {
+  return VERBS.filter((v) => {
+    if (!matchesVerbFilter(v, settings.verbFilter)) return false;
+    if (forConjugation && (v.infinitive === 'asseoir' || v.infinitive === 'pleuvoir')) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function eligibleVerbs(settings: GameSettings, forConjugation = false): VerbEntry[] {
+  const verbs = getEligibleVerbs(settings, forConjugation);
+  return verbs.length > 0 ? verbs : getEligibleVerbs({ ...settings, verbFilter: 'both' }, forConjugation);
+}
+
+function phraseContextPool(
+  settings: GameSettings,
+  etreOnly: boolean,
+): typeof PHRASE_CONTEXTS {
+  let pool = settings.includeNegative
+    ? PHRASE_CONTEXTS
+    : PHRASE_CONTEXTS.filter((c) => !c.negative);
+  pool = pool.filter((c) => (etreOnly ? c.etreOnly : !c.etreOnly));
+  return pool.length > 0 ? pool : PHRASE_CONTEXTS;
 }
 
 export function generatePhraseQuestion(settings: GameSettings): PhraseQuestion {
-  const verbs = eligibleVerbs(settings.tenses);
-  const verb = pick(verbs);
-  const tense = pick(settings.tenses);
-  const pool = settings.includeNegative
-    ? PHRASE_CONTEXTS
-    : PHRASE_CONTEXTS.filter((c) => !c.negative);
+  const verbs = eligibleVerbs(settings);
+  const etreVerbs = verbs.filter((v) => v.auxiliary === 'etre');
+  const hasPasseCompose = settings.tenses.includes('passe_compose');
+  const useEtrePasseCompose =
+    hasPasseCompose && etreVerbs.length > 0 && Math.random() < 0.5;
+
+  let verb: VerbEntry;
+  let tense: Tense;
+  let pool: typeof PHRASE_CONTEXTS;
+
+  if (useEtrePasseCompose) {
+    verb = pick(etreVerbs);
+    tense = 'passe_compose';
+    pool = phraseContextPool(settings, true);
+  } else {
+    verb = pick(verbs);
+    tense = pick(settings.tenses);
+    pool = phraseContextPool(settings, false);
+    if (verb.auxiliary !== 'etre') {
+      pool = pool.filter((c) => !c.etreOnly);
+    }
+    if (pool.length === 0) {
+      pool = phraseContextPool(settings, verb.auxiliary === 'etre');
+    }
+  }
+
   const context = pick(pool);
   const negative = context.negative ?? false;
   const pronoun = context.pronoun;
@@ -63,9 +114,7 @@ export function generatePhraseQuestion(settings: GameSettings): PhraseQuestion {
 export function generateConjugationQuestion(
   settings: GameSettings,
 ): ConjugationQuestion {
-  const verbs = eligibleVerbs(settings.tenses).filter(
-    (v) => v.infinitive !== 'asseoir' && v.infinitive !== 'pleuvoir',
-  );
+  const verbs = eligibleVerbs(settings, true);
   const verb = pick(verbs);
   const tense = pick(settings.tenses);
   const negative =

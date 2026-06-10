@@ -6,6 +6,9 @@ export type Tense = (typeof TENSES)[number];
 
 export type InputMode = 'multiple_choice' | 'keyboard';
 
+export const VERB_FILTERS = ['both', 'regular', 'irregular'] as const;
+export type VerbFilter = (typeof VERB_FILTERS)[number];
+
 export type Screen =
   | 'home'
   | 'phrase_setup'
@@ -18,11 +21,13 @@ export interface GameSettings {
   tenses: Tense[];
   inputMode: InputMode;
   includeNegative: boolean;
+  verbFilter: VerbFilter;
 }
 
 export interface VerbEntry {
   infinitive: string;
   english: string;
+  regular: boolean;
   auxiliary: 'avoir' | 'etre' | 'impersonal';
   present: Record<Pronoun, string>;
   passeCompose: Record<Pronoun, string>;

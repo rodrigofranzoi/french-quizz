@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
-import type { GameSettings, InputMode, Tense } from '../types';
+import type { GameSettings, InputMode, Tense, VerbFilter } from '../types';
 import { TENSES } from '../types';
 import { tenseLabel } from '../utils/conjugation';
+import { getEligibleVerbs } from '../utils/quiz';
 import { colors, spacing } from '../theme';
 import { Button } from './Button';
 import { Chip } from './Chip';
@@ -11,9 +12,22 @@ interface GameSetupProps {
   onChange: (settings: GameSettings) => void;
   onStart: () => void;
   gameTitle: string;
+  forConjugation?: boolean;
 }
 
-export function GameSetup({ settings, onChange, onStart, gameTitle }: GameSetupProps) {
+const VERB_FILTER_LABELS: Record<VerbFilter, string> = {
+  both: 'Tous',
+  regular: 'Réguliers',
+  irregular: 'Irréguliers',
+};
+
+export function GameSetup({
+  settings,
+  onChange,
+  onStart,
+  gameTitle,
+  forConjugation = false,
+}: GameSetupProps) {
   const toggleTense = (tense: Tense) => {
     const has = settings.tenses.includes(tense);
     const tenses = has
@@ -24,7 +38,8 @@ export function GameSetup({ settings, onChange, onStart, gameTitle }: GameSetupP
 
   const setMode = (inputMode: InputMode) => onChange({ ...settings, inputMode });
 
-  const canStart = settings.tenses.length > 0;
+  const verbCount = getEligibleVerbs(settings, forConjugation).length;
+  const canStart = settings.tenses.length > 0 && verbCount > 0;
 
   return (
     <View>
@@ -39,6 +54,21 @@ export function GameSetup({ settings, onChange, onStart, gameTitle }: GameSetupP
           />
         ))}
       </View>
+
+      <Text style={styles.section}>Verbes</Text>
+      <View style={styles.row}>
+        {(['both', 'regular', 'irregular'] as VerbFilter[]).map((f) => (
+          <Chip
+            key={f}
+            label={VERB_FILTER_LABELS[f]}
+            selected={settings.verbFilter === f}
+            onPress={() => onChange({ ...settings, verbFilter: f })}
+          />
+        ))}
+      </View>
+      {verbCount === 0 && (
+        <Text style={styles.hint}>Aucun verbe pour ce filtre.</Text>
+      )}
 
       <Text style={styles.section}>Mode de réponse</Text>
       <View style={styles.row}>
@@ -92,5 +122,10 @@ const styles = StyleSheet.create({
   },
   start: {
     marginTop: spacing.xl,
+  },
+  hint: {
+    fontSize: 13,
+    color: colors.error,
+    marginBottom: spacing.sm,
   },
 });

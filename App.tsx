@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   tenses: [...TENSES],
   inputMode: 'multiple_choice',
   includeNegative: true,
+  verbFilter: 'both',
 };
 
 export default function App() {
@@ -57,6 +58,7 @@ export default function App() {
               onChange={setSettings}
               onStart={() => setScreen('conjugation_game')}
               gameTitle="Conjugaison"
+              forConjugation
             />
           </ScreenLayout>
         );

@@ -18,6 +18,7 @@ function er(
   return {
     infinitive,
     english,
+    regular: true,
     auxiliary: 'avoir',
     present: buildPresentEr(infinitive),
     passeCompose: buildPasseComposeAvoir(pp, feminine),
@@ -33,10 +34,12 @@ function etre(
   fsStem: string,
   feminine: { elle: string; elles: string },
   present: Record<Pronoun, string>,
+  regular = false,
 ): VerbEntry {
   return {
     infinitive,
     english,
+    regular,
     auxiliary: 'etre',
     present,
     passeCompose: buildPasseComposeEtre(pp, feminine),
@@ -51,6 +54,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'pouvoir',
     english: 'to be able to',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'peux', tu: 'peux', elle: 'peut', nous: 'pouvons', vous: 'pouvez', elles: 'peuvent' },
     passeCompose: { je: 'ai pu', tu: 'as pu', elle: 'a pu', nous: 'avons pu', vous: 'avez pu', elles: 'ont pu' },
@@ -60,6 +64,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'faire',
     english: 'to do / make',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'fais', tu: 'fais', elle: 'fait', nous: 'faisons', vous: 'faites', elles: 'font' },
     passeCompose: { je: 'ai fait', tu: 'as fait', elle: 'a fait', nous: 'avons fait', vous: 'avez fait', elles: 'ont fait' },
@@ -69,6 +74,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'pleuvoir',
     english: 'to rain',
+    regular: false,
     auxiliary: 'impersonal',
     present: { je: 'pleut', tu: 'pleut', elle: 'pleut', nous: 'pleut', vous: 'pleut', elles: 'pleut' },
     passeCompose: { je: 'a plu', tu: 'a plu', elle: 'a plu', nous: 'a plu', vous: 'a plu', elles: 'a plu' },
@@ -78,6 +84,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'prendre',
     english: 'to take',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'prends', tu: 'prends', elle: 'prend', nous: 'prenons', vous: 'prenez', elles: 'prennent' },
     passeCompose: { je: 'ai pris', tu: 'as pris', elle: 'a pris', nous: 'avons pris', vous: 'avez pris', elles: 'ont pris' },
@@ -87,6 +94,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'dire',
     english: 'to say',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'dis', tu: 'dis', elle: 'dit', nous: 'disons', vous: 'dites', elles: 'disent' },
     passeCompose: { je: 'ai dit', tu: 'as dit', elle: 'a dit', nous: 'avons dit', vous: 'avez dit', elles: 'ont dit' },
@@ -103,6 +111,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'obtenir',
     english: 'to obtain',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'obtiens', tu: 'obtiens', elle: 'obtient', nous: 'obtenons', vous: 'obtenez', elles: 'obtiennent' },
     passeCompose: { je: 'ai obtenu', tu: 'as obtenu', elle: 'a obtenu', nous: 'avons obtenu', vous: 'avez obtenu', elles: 'ont obtenu' },
@@ -113,6 +122,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'avoir',
     english: 'to have',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'ai', tu: 'as', elle: 'a', nous: 'avons', vous: 'avez', elles: 'ont' },
     passeCompose: { je: 'ai eu', tu: 'as eu', elle: 'a eu', nous: 'avons eu', vous: 'avez eu', elles: 'ont eu' },
@@ -124,17 +134,19 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'vouloir',
     english: 'to want',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'veux', tu: 'veux', elle: 'veut', nous: 'voulons', vous: 'voulez', elles: 'veulent' },
     passeCompose: { je: 'ai voulu', tu: 'as voulu', elle: 'a voulu', nous: 'avons voulu', vous: 'avez voulu', elles: 'ont voulu' },
     futurProche: buildFuturProche('vouloir'),
     futurSimple: { je: 'voudrai', tu: 'voudras', elle: 'voudra', nous: 'voudrons', vous: 'voudrez', elles: 'voudront' },
   },
-  etre('entrer', 'to enter', 'entré', 'entrer', { elle: 'entrée', elles: 'entrées' }, buildPresentEr('entrer')),
+  etre('entrer', 'to enter', 'entré', 'entrer', { elle: 'entrée', elles: 'entrées' }, buildPresentEr('entrer'), true),
   er('souhaiter', 'to wish', 'souhaité', 'souhaiter'),
   {
     infinitive: 'acheter',
     english: 'to buy',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'achète', tu: 'achètes', elle: 'achète', nous: 'achetons', vous: 'achetez', elles: 'achètent' },
     passeCompose: buildPasseComposeAvoir('acheté'),
@@ -147,17 +159,19 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'arrêter',
     english: 'to stop',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'arrête', tu: 'arrêtes', elle: 'arrête', nous: 'arrêtons', vous: 'arrêtez', elles: 'arrêtent' },
     passeCompose: buildPasseComposeAvoir('arrêté'),
     futurProche: buildFuturProche('arrêter'),
     futurSimple: { je: 'arrêterai', tu: 'arrêteras', elle: 'arrêtera', nous: 'arrêterons', vous: 'arrêterez', elles: 'arrêteront' },
   },
-  etre('arriver', 'to arrive', 'arrivé', 'arriver', { elle: 'arrivée', elles: 'arrivées' }, buildPresentEr('arriver')),
+  etre('arriver', 'to arrive', 'arrivé', 'arriver', { elle: 'arrivée', elles: 'arrivées' }, buildPresentEr('arriver'), true),
   er('marier', 'to marry', 'marié', 'marier'),
   {
     infinitive: 'préparer',
     english: 'to prepare',
+    regular: true,
     auxiliary: 'avoir',
     present: buildPresentEr('préparer'),
     passeCompose: buildPasseComposeAvoir('préparé'),
@@ -170,6 +184,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'asseoir',
     english: 'to sit',
+    regular: false,
     auxiliary: 'etre',
     present: { je: 'assois', tu: 'assois', elle: 'assoit', nous: 'asseyons', vous: 'asseyez', elles: 'assoient' },
     passeCompose: {
@@ -188,6 +203,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'attendre',
     english: 'to wait',
+    regular: true,
     auxiliary: 'avoir',
     present: buildPresentRe('attendre'),
     passeCompose: buildPasseComposeAvoir('attendu'),
@@ -203,6 +219,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'quitter',
     english: 'to leave',
+    regular: true,
     auxiliary: 'avoir',
     present: buildPresentEr('quitter'),
     passeCompose: buildPasseComposeAvoir('quitté'),
@@ -212,6 +229,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'voir',
     english: 'to see',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'vois', tu: 'vois', elle: 'voit', nous: 'voyons', vous: 'voyez', elles: 'voient' },
     passeCompose: { je: 'ai vu', tu: 'as vu', elle: 'a vu', nous: 'avons vu', vous: 'avez vu', elles: 'ont vu' },
@@ -221,6 +239,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'lire',
     english: 'to read',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'lis', tu: 'lis', elle: 'lit', nous: 'lisons', vous: 'lisez', elles: 'lisent' },
     passeCompose: { je: 'ai lu', tu: 'as lu', elle: 'a lu', nous: 'avons lu', vous: 'avez lu', elles: 'ont lu' },
@@ -230,6 +249,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'boire',
     english: 'to drink',
+    regular: false,
     auxiliary: 'avoir',
     present: { je: 'bois', tu: 'bois', elle: 'boit', nous: 'buvons', vous: 'buvez', elles: 'boivent' },
     passeCompose: { je: 'ai bu', tu: 'as bu', elle: 'a bu', nous: 'avons bu', vous: 'avez bu', elles: 'ont bu' },
@@ -239,6 +259,7 @@ export const VERBS: VerbEntry[] = [
   {
     infinitive: 'être',
     english: 'to be',
+    regular: false,
     auxiliary: 'etre',
     present: { je: 'suis', tu: 'es', elle: 'est', nous: 'sommes', vous: 'êtes', elles: 'sont' },
     passeCompose: buildPasseComposeEtre('été'),
